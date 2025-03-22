@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  
+  <title><%= poll.question %></title>
+  <style>
+    .poll-container { max-width: 600px; margin: 20px auto; }
+    .option { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    .vote-btn { margin-left: 10px; }
+  </style>
+</head>
+
+<body>
+  <div class="poll-container">
+    <h1><%= poll.question %></h1>
+    <div id="options">
+      <% poll.options.forEach((option) => { %>
+        <div class="option">
+          <%= option %>
+          <button class="vote-btn" onclick="vote('<%= option %>')">Vote</button>
+          <span id="<%= option %>-count">0 votes</span>
+        </div>
+      <% }); %>
+    </div>
+    <h3>Live Results:</h3>
+    <div id="results"></div>
+  </div>
+
+  <!-- ✅ Added Socket.io Client Script -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io("http://localhost:3000"); // Now it will work!
+    socket.on("connect", () => console.log("Socket.io connected!"));
+
+    // Listen for live poll updates
+    socket.on('pollUpdate', (poll) => {
+      poll.options.forEach(option => {
+        const count = poll.votes.filter(v => v.option === option).length;
+        const countSpan = document.getElementById(`${option}-count`);
+        if (countSpan) countSpan.textContent = `${count} votes`;
+      });
+    });
+
+    // Handle voting
+    function vote(option) {
+      const userIdentifier = prompt("Enter your name or ID:"); // Simple user ID (replace with IP/session later)
+      socket.emit('vote', {
+        pollId: '<%= poll._id %>',
+        option: option,
+        userIdentifier: userIdentifier
+      });
+    }
+  </script>
+</body>
+</html>
