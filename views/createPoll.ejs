@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Poll</title>
+</head>
+<body>  
+    <h1>Create a New Poll</h1>
+    <form id="createPollForm">
+        <input type="text" name="question" placeholder="Poll Question" required>
+        <div id="options">
+            <input type="text" name="options" placeholder="Option 1" required>
+            <input type="text" name="options" placeholder="Option 2" required>
+        </div>
+        <button type="button" onclick="addOption()">Add Option</button>
+        <button type="submit">Create Poll</button>
+    </form>
+
+    <script>
+        function addOption() {
+            const newInput = document.createElement('input');
+            newInput.type = 'text';
+            newInput.name = 'options';
+            newInput.placeholder = 'New Option';
+            document.getElementById('options').appendChild(newInput);
+        }
+
+        document.getElementById('createPollForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = document.querySelector('input[name="question"]').value;
+            const options = Array.from(document.querySelectorAll('input[name="options"]')).map(input => input.value);
+
+            const response = await fetch('/api/polls/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, options }),
+            });
+
+            const poll = await response.json();
+            window.location.href = `/poll/${poll._id}`;
+        });
+    </script>
+</body>
+</html>
